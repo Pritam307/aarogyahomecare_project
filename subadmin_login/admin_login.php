@@ -9,17 +9,17 @@ include('../dbconnect.php');
 $errors=array();
 
 if(isset($_POST['adminlogin'])){
+
     $username=mysqli_real_escape_string($db,$_POST['uname']);
     $userpass=mysqli_real_escape_string($db,$_POST['urpass']);
 
     $uquery="SELECT username,password,email FROM sub_admins WHERE username='$username'";
     $row=mysqli_query($db,$uquery);
     $res=mysqli_fetch_assoc($row);
-    $r=mysqli_num_rows($row);;
-//    echo $res['email'];
+    $r=mysqli_num_rows($row);
+
     if($r>0){
         if(password_verify($userpass,$res['password'])){
-//            echo $res['password'];
             session_start();
             $_SESSION['user']=$res['username'];
             $_SESSION['email']=$res['email'];
@@ -27,12 +27,33 @@ if(isset($_POST['adminlogin'])){
             header("location:../dashboard/home.php");
         }else{
             $errors['pass_error']="Invalid Password";
-//            echo mysqli_error($db);
         }
     }else{
-        $errors['username_error']="Username does not exist";
-        echo "Username does not exist";
+        $admin_qry = "SELECT username,password,email FROM superadmin WHERE username = '$username'";
+        $admin_res=mysqli_query($db,$admin_qry);
+        $admin_row=mysqli_fetch_assoc($admin_res);
+        $admin_r = mysqli_num_rows($admin_res);
+
+        if($admin_r>0){
+            if($userpass==$admin_row['password']){
+                echo $admin_row['password'];
+                session_start();
+                $_SESSION['user']=$admin_row['username'];
+                $_SESSION['email']=$admin_row['email'];
+                $_SESSION['super_admin']=1;
+                header("location:../dashboard/home.php");
+            }else{
+                $errors['pass_error']="Invalid Password";
+            }
+        }else{
+            $errors['pass_error']="Invalid Username";
+            echo "Invalid username";
+        }
+
     }
+
+
+
 
 
 }

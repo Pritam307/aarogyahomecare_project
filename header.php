@@ -34,7 +34,7 @@
                 <li class="" id="aboutPage"><a href="about.php">About Us</a></li>
                 <li class="" id="projectsPage"><a href="projects.php">Gallery</a></li>
                 <li class="" id="contactPage"><a href="contact.php">Contact Us</a></li>
-                <li class="" id="userPage"><a href="subadmin_login/admin_login.php">Login <span>|</span></a><a href="subadmin_login/admin_register.php"> SignUp</a></li>
+                <li class="" id="userPage"><a href="./subadmin_login/admin_login.php">Login <span>|</span></a><a href="./subadmin_login/admin_register.php"> SignUp</a></li>
                 <li class="" id="bookPage"><a href="book_nurse.php">Book Online</a></li>
 
             </ul>
