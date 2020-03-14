@@ -51,11 +51,6 @@ if(isset($_POST['adminlogin'])){
         }
 
     }
-
-
-
-
-
 }
 ?>
 
