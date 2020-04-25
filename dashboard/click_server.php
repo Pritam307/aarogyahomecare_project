@@ -2,60 +2,77 @@
 include '../dbconnect.php';
 include '../send_mail.php';
 
-if(isset($_POST['id'])) {
-    $patient_id = $_POST['id'];
 
-    $patient_info=mysqli_query($db,"SELECT email,fname,lname,registration_id,district,service,duty_shift FROM patient_book_nurse WHERE id='$patient_id'");
-    $res_patient=mysqli_fetch_assoc($patient_info);
-    $p_email=$res_patient['email'];
 
-    $query = "UPDATE patient_book_nurse SET accepted='0' WHERE id='$patient_id'";
-
-    if (mysqli_query($db, $query)) {
-        $mail->addAddress($p_email);
-        $mail->Subject = 'AarogyaHomeCare | Nurse Assign Status';
-        $mail->Body = '
-            <h3>Your Booking is Rejected. Please contact the official for more info.</h3>
-            <h3>Contact Number:  +91 9435960652, 9101786597, 9531339627</h3>
-            <h3>Email: info@aarogyahomecare.com</h3>
-            <h3><a href="http://aarogya/contact.php">Submit query</a></h3>
-        ';
-        if($mail->send()){
-            echo json_encode(["status" => "success","msg"=>"email send successfully"]);
-        }else{
-            echo json_encode(["status" => "fail","msg"=>"failed to send message"]);
-        }
-    } else {
-        echo json_encode((["error" => mysqli_error($db)]));
-    }
-}
-
-if(isset($_POST['regId']) && isset($_POST['attendence'])){
-    $nurse_reg=$_POST['regId'];
-    $nurse_presence=$_POST['attendence'];
+if(isset($_POST['inregId'])){
+    $nurse_id=$_POST['inregId'];
 
     $year=date("Y");
     $mon=date("m");
     $day=date("d");
 
-    if($nurse_presence){
-        echo "present";
-        $pre_query="INSERT INTO nurse_attendence (Year,Month,Day,nurse_reg_id,present) VALUES ('$year','$mon','$day','$nurse_reg',1)";
-        if($res=mysqli_query($db,$pre_query)){
-            echo json_encode(["status"=>"present success"]);
-        }else{
-            echo json_encode(["status"=>mysqli_error($db)]);
-        }
+    $curr_time = date('H:i',time());
+    $in_query="INSERT INTO nurse_attendence (Year,Month,Day,nurse_reg_id,clock_in) VALUES ('$year','$mon','$day','$nurse_id','$curr_time')";
+
+    if($res=mysqli_query($db,$in_query)){
+        echo json_encode(["status"=>"success"]);
     }else{
-        echo "absent";
-            $pre_query="INSERT INTO nurse_attendence (Year,Month,Day,nurse_reg_id,present) VALUES ('$year','$mon','$day','$nurse_reg',0)";
-        if($res=mysqli_query($db,$pre_query)){
-            echo json_encode(["status"=>"absent success"]);
-        }else{
-            echo json_encode(["status"=>mysqli_error($db)]);
-        }
+        echo json_encode(["status"=>mysqli_error($db)]);
     }
 }
+
+
+if(isset($_POST['outregId'])){
+
+    $nurse_id=$_POST['outregId'];
+    $given_working_hours=null;
+    $deadline_hours=null;
+    $clk_in_time=null;
+    $present=null;
+
+    $year=date("Y");
+    $mon=date("m");
+    $day=date("d");
+
+    //Get nurse Id from registration id
+    $nid_query = mysqli_query($db,"SELECT id FROM nurses WHERE regId='$nurse_id'");
+    $nid_res=mysqli_fetch_assoc($nid_query)['id'];
+
+    //get working hours for this nurse
+    $d_query="SELECT * FROM nurse_duty_shift,patient_nurse_allocation WHERE nurse_duty_shift.id = patient_nurse_allocation.allocated_duty_shift AND patient_nurse_allocation.nurse_id='$nid_res'";
+    if($res=mysqli_query($db,$d_query)){
+        $val = mysqli_fetch_assoc($res);
+        $given_working_hours=$val['working_hours'];
+        $deadline_hours=$val['deadline_hours'];
+    }
+
+    //get clock in time
+    $clkin_query="SELECT clock_in FROM nurse_attendence WHERE nurse_reg_id='$nurse_id' AND Day='$day' AND Month='$mon' AND Year='$year'";
+    if($ires=mysqli_query($db,$clkin_query)){
+        $ival=mysqli_fetch_assoc($ires);
+        $clk_in_time = date("H:i",strtotime($ival['clock_in']));
+    }
+
+    $curr_time = date('H:i',time());
+    //get diffrence of clock in and clock time
+    $time_diff=round(gmdate(strtotime($curr_time)-strtotime($clk_in_time))/3600,2);
+
+    if($time_diff>=$deadline_hours){
+        $present = true;
+    }else{
+        $present = false;
+    }
+
+    $clkout_query = "UPDATE nurse_attendence SET clock_out = '$curr_time', present = '$present' WHERE nurse_reg_id='$nurse_id' AND Day='$day' AND Month='$mon' AND Year='$year'";
+    if(mysqli_query($db,$clkout_query)){
+        echo json_encode(["status"=>"success","present"=>$present]);
+    }else{
+        echo json_encode(["status"=>mysqli_error($db)]);
+    }
+    //   echo json_encode(["status"=>"success","diff"=>$time_diff,"work_hrs=>$given_working_hours","present"=>$present]);
+
+}
+
 
 ?>
 

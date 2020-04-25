@@ -16,20 +16,72 @@ if(!isset($_SESSION)){
 include '../dbconnect.php';
 if(isset($_POST['dutybtn'])){
     $shift=mysqli_real_escape_string($db,$_POST['shift']);
-    $sfrom=mysqli_real_escape_string($db,$_POST['tfrom']);
-    $sto=mysqli_real_escape_string($db,$_POST['tto']);
-//
-//    echo $shift."<br>";
-//    echo $sfrom."<br>";
-//    echo $sto."<br>";
+    $whrs=mysqli_real_escape_string($db,$_POST['workhrs']);
+    $dhrs=mysqli_real_escape_string($db,$_POST['deadline']);
 
-    $qry="INSERT INTO nurse_duty_shift (Shift,from_time,to_time) VALUES ('$shift','$sfrom','$sto')";
+    $qry="INSERT INTO nurse_duty_shift (Shift,working_hours,deadline_hours) VALUES ('$shift','$whrs','$dhrs')";
     if(mysqli_query($db,$qry)){
         echo 'success';
     }else{
         echo mysqli_error($db);
     }
 }
+
+if(isset($_POST['editDuty'])){
+    $d_id=mysqli_real_escape_string($db,$_POST['shift_id']);
+    $eshift=mysqli_real_escape_string($db,$_POST['eshift']);
+    $edit_wrkghrs=mysqli_real_escape_string($db,$_POST['eworkhrs']);
+    $edit_deadln=mysqli_real_escape_string($db,$_POST['edeadline']);
+    $dsql=null;
+
+//        echo $eshift;
+//        echo $edit_wrkghrs;
+//        echo $edit_wrkghrs;
+
+
+    #if only shift name
+    if(!empty($eshift) AND empty($edit_deadln) AND empty($edit_wrkghrs)){
+        echo "shift name";
+        $dsql="UPDATE nurse_duty_shift SET Shift='$eshift' WHERE id='$d_id'";
+    }
+    #if only working hours
+    if(!empty($edit_wrkghrs) AND empty($eshift) AND empty($edit_deadln)){
+        echo "working hours";
+        $dsql="UPDATE nurse_duty_shift SET working_hours='$edit_wrkghrs' WHERE id='$d_id'";
+    }
+    #if only deadline hours
+    if(!empty($edit_deadln) AND empty($eshift) AND empty($edit_wrkghrs)){
+        echo "deadline hours";
+        $dsql="UPDATE nurse_duty_shift SET deadline_hours='$edit_deadln' WHERE id='$d_id'";
+    }
+    #if shift name and deadline hours
+    if(!empty($eshift) AND !empty($edit_deadln) AND empty($edit_wrkghrs)){
+        echo "shift name and deadline hours";
+        $dsql="UPDATE nurse_duty_shift SET Shift='$eshift',deadline_hours='$edit_deadln' WHERE id='$d_id'";
+    }
+    #if only shift name and working hours
+    if(!empty($eshift) AND !empty($edit_wrkghrs) AND empty($edit_deadln)){
+        echo "shift name and working hours";
+        $dsql="UPDATE nurse_duty_shift SET Shift='$eshift',working_hours='$edit_wrkghrs' WHERE id='$d_id'";
+    }
+    #if only deadline hours and working hours
+    if(!empty($edit_wrkghrs) AND !empty($edit_deadln) AND empty($eshift)){
+        echo "deadline hours and working hours";
+        $dsql="UPDATE nurse_duty_shift SET working_hours='$edit_wrkghrs',deadline_hours='$edit_deadln' WHERE id='$d_id'";
+    }
+    #if all three
+    if(!empty($eshift) AND !empty($edit_deadln) AND !empty($edit_wrkghrs)){
+        echo "all three";
+        $dsql="UPDATE nurse_duty_shift SET Shift='$eshift',working_hours='$edit_wrkghrs',deadline_hours='$edit_deadln' WHERE id='$d_id'";
+    }
+
+    if(mysqli_query($db,$dsql)){
+        echo "success";
+    }else{
+        echo mysqli_error($db);
+    }
+}
+
 $index=0;
 ?>
 
@@ -61,8 +113,9 @@ $index=0;
                     <thead>
                             <th>Serial No.</th>
                             <th>Duty Shift of Nurse</th>
-                            <th>To</th>
-                            <th>From</th>
+                            <th>Working Hours</th>
+                            <th>Minimum hours of Work</th>
+                            <th>Action</th>
                     </thead>
                     <tbody>
                     <?php
@@ -70,22 +123,15 @@ $index=0;
                         $res=mysqli_query($db,$rquery);
                         while($row=mysqli_fetch_array($res)){
                             $index++;
-                            if($row['from_time']!=0){
-                                $f_time=date('h:i A',strtotime($row['from_time']));
-                            }else{
-                                $f_time="00.00";
-                            }
-                            if($row['to_time']!=0){
-                                $t_time=date('h:i A',strtotime($row['to_time']));
-                            }else{
-                                $t_time="00.00";
-                            }
                             ?>
-                                <tr>
+                                <tr align="center">
                                     <td><?php echo $index; ?></td>
-                                    <td><?php echo $row['Shift']; ?></td>
-                                    <td><?php echo $f_time; ?></td>
-                                    <td><?php echo $t_time; ?></td>
+                                    <td id="dshift"><?php echo $row['Shift']; ?></td>
+                                    <td id="d_work"><?php echo $row['working_hours']; ?> hrs</td>
+                                    <td id="d_dline"><?php echo $row['deadline_hours']; ?> hrs </td>
+                                    <td>
+                                        <button class="btn btn-outline-primary btn-sm" data-target="#editModal" data-toggle="modal" onclick="getIdToModal('<?php echo $row['id'];?>')">Edit</button>
+                                    </td>
                                 </tr>
                             <?php
                         }
@@ -93,6 +139,7 @@ $index=0;
                     </tbody>
                 </table>
 
+<!--                ADD MODAL-->
                 <div class="modal fade" id="dutyModal" tabindex="-1" role="dialog" aria-labelledby="dutyModal" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
@@ -102,6 +149,8 @@ $index=0;
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
+
+
                             <div class="modal-body">
                                 <form action="" method="post">
                                     <div class="form-group">
@@ -109,25 +158,55 @@ $index=0;
                                         <input type="text" class="form-control" name="shift" id="exampleInputEmail1" aria-describedby="emailHelp">
                                     </div>
                                     <div class="row">
-                                        <div class="col-4 d-flex align-items-center">
+                                        <div class="col-4 d-flex align-items-center ">
                                             <div class="card-text">Enter Timing</div>
                                         </div>
                                         <div class="col-4">
                                             <div class="form-group">
-                                                <label for="from">From</label>
-                                                <input type="time" name="tfrom" class="form-control" id="from" >
+                                                <label for="from">Working Hours</label>
+                                                <input type="number" name="workhrs" class="form-control" id="workhrs" min="1" >
                                             </div>
                                         </div>
                                         <div class="col-4">
                                             <div class="form-group">
-                                                <label for="to">To</label>
-                                                <input type="time" name="tto" class="form-control" id="to" >
+                                                <label for="from">Deadline Hours</label>
+                                                <input type="number" name="deadline" class="form-control" id="deadline" min="1">
                                             </div>
                                         </div>
+<!--                                        <div class="col-3  px-0">-->
+<!--                                            <div class="form-group">-->
+<!--                                                <label for="from">From</label>-->
+<!--                                                <input type="time" name="tfrom" class="form-control" id="from" >-->
+<!--                                            </div>-->
+<!--                                        </div>-->
+<!--                                        <div class="col-2  pl-0">-->
+<!--                                            <div class="form-group">-->
+<!--                                                <label for="fromselect"></label>-->
+<!--                                                <select class="form-control" name="fromformat" id="fromselect">-->
+<!--                                                    <option>am</option>-->
+<!--                                                    <option>pm</option>-->
+<!--                                                </select>-->
+<!--                                            </div>-->
+<!--                                        </div>-->
+<!--                                        <div class="col-3  pr-0">-->
+<!--                                            <div class="form-group">-->
+<!--                                                <label for="to">To</label>-->
+<!--                                                <input type="time" name="tto" class="form-control" id="to" >-->
+<!--                                            </div>-->
+<!--                                        </div>-->
+<!--                                        <div class="col-2  pl-0">-->
+<!--                                            <div class="form-group">-->
+<!--                                                <label for="toselect"></label>-->
+<!--                                                <select class="form-control" name="toformat" id="toselect">-->
+<!--                                                    <option>am</option>-->
+<!--                                                    <option>pm</option>-->
+<!--                                                </select>-->
+<!--                                            </div>-->
+<!--                                        </div>-->
                                     </div>
                                     <div class="col-12 d-flex justify-content-end">
                                         <button type="button" class="btn btn-secondary mr-3" data-dismiss="modal">Close</button>
-                                        <button type="submit" name="dutybtn" class="btn btn-primary">Save changes</button>
+                                        <button type="submit" name="dutybtn" class="btn btn-primary">Add</button>
                                     </div>
                                 </form>
                             </div>
@@ -135,10 +214,57 @@ $index=0;
                     </div>
                 </div>
 
+<!--                EDIT MODAL-->
+                <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Edit Duty Timings</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="" method="post">
+                                    <div class="form-group">
+                                        <label for="exampleInputEmail1">Enter Nurse Shift</label>
+                                        <input type="text" class="form-control" name="eshift" id="exampleInputEmail1" aria-describedby="emailHelp">
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-4 d-flex align-items-center ">
+                                            <div class="card-text">Enter Timing</div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="form-group">
+                                                <label for="from">Working Hours</label>
+                                                <input type="number" name="eworkhrs" class="form-control" id="workhrs" min="1" >
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="form-group">
+                                                <label for="from">Deadline Hours</label>
+                                                <input type="number" name="edeadline" class="form-control" id="deadline" min="1">
+                                            </div>
+                                        </div>
+                                        <input type="hidden" id="shift_id" value="" name="shift_id">
+                                    </div>
+                                    <div class="col-12 d-flex justify-content-end">
+                                        <button type="button" class="btn btn-secondary mr-3" data-dismiss="modal">Close</button>
+                                        <button type="submit" name="editDuty" class="btn btn-primary">Edit</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
             </div>
         </div>
     </div>
 </div>
+
+
 
 
 

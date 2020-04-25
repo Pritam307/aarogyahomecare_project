@@ -1,7 +1,7 @@
 
 <nav class="navbar default-layout col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
   <div class="text-center navbar-brand-wrapper d-flex align-items-top justify-content-center">
-    <a class="navbar-brand brand-logo" href="../home.php" style="text-decoration: white" >
+    <a class="navbar-brand brand-logo" href="../../index.php" style="text-decoration: white" >
 <!--      <img src="assets/images/logo.svg" alt="logo" />-->
         <div class="card-text font-weight-bold" style="text-decoration: none" >AarogyaHomeCare</div>
     </a>
@@ -19,10 +19,10 @@
     <ul class="navbar-nav ml-auto">
       <li class="nav-item dropdown d-none d-xl-inline-block user-dropdown " id="droplist">
         <a class="nav-link dropdown-toggle" id="UserDropdown" href="#" data-toggle="dropdown" aria-expanded="false">
-          <img class="img-xs rounded-circle" src="assets/images/faces/profile_alt.png" alt="Profile image"> </a>
+          <img class="img-xs rounded-circle" src="../../dashboard/assets/images/faces/profile_alt.png" alt="Profile image"> </a>
         <div class="dropdown-menu dropdown-menu-right navbar-dropdown " aria-labelledby="UserDropdown">
           <div class="dropdown-header text-center">
-            <img class="img-md rounded-circle" src="assets/images/faces/profile_alt.png" alt="Profile image">
+            <img class="img-md rounded-circle" src="../../dashboard/assets/images/faces/profile_alt.png" alt="Profile image">
             <?php
                 if(isset($_SESSION)){
                     if(isset($_SESSION['user']) && isset($_SESSION['email'])){

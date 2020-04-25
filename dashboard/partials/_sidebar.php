@@ -3,7 +3,7 @@
     <li class="nav-item nav-profile">
       <a href="#" class="nav-link">
         <div class="profile-image">
-          <img class="img-xs rounded-circle" src="assets/images/faces/face8.jpg" alt="profile image">
+          <img class="img-xs rounded-circle" src="../../dashboard/assets/images/faces/face8.jpg" alt="profile image">
           <div class="dot-indicator bg-success"></div>
         </div>
         <div class="text-wrapper">
@@ -22,10 +22,10 @@
             <div class="collapse" id="patient">
               <ul class="nav flex-column sub-menu">
                   <li class="nav-item">
-                      <a class="nav-link" href="../dashboard/patient_request.php">Bookings</a>
+                      <a class="nav-link" href="../../dashboard/patient_request.php">Bookings</a>
                   </li>
                   <li class="nav-item">
-                      <a class="nav-link" href="../dashboard/patient_payments.php">Payment Details</a>
+                      <a class="nav-link" href="../../dashboard/patient_payments.php">Payment Details</a>
                   </li>
               </ul>
           </div>
@@ -40,18 +40,34 @@
           <div class="collapse" id="nurse">
               <ul class="nav flex-column sub-menu">
                   <li class="nav-item">
-                      <a class="nav-link" href="../dashboard/add_nurse.php"> Add Nurse</a>
+                      <a class="nav-link" href="../../dashboard/add_nurse.php"> Add Nurse</a>
                   </li>
                   <li class="nav-item">
-                      <a class="nav-link" href="../dashboard/duty_shifts.php">Regulate Duty Shifts</a>
+                      <a class="nav-link" href="../../dashboard/duty_shifts.php">Regulate Duty Shifts</a>
                   </li>
                   <li class="nav-item">
-                      <a class="nav-link" href="../dashboard/individual_profile.php">Individual Profile</a>
+                      <a class="nav-link" href="../../dashboard/salary_year_sheet.php">Salary Sheet</a>
                   </li>
               </ul>
           </div>
       </li>
 
+      <li class="nav-item">
+          <a class="nav-link" data-toggle="collapse" href="#mobile" aria-expanded="false" aria-controls="auth">
+              <i class="menu-icon typcn typcn-shopping-bag"></i>
+              <span class="menu-title">Mobile Pages</span>
+          </a>
+          <div class="collapse" id="mobile">
+              <ul class="nav flex-column sub-menu">
+                  <li class="nav-item">
+                      <a class="nav-link" href="../../dashboard/mobile_portion/signIn.php">SignIn</a>
+                  </li>
+                  <li class="nav-item">
+                      <a class="nav-link" href="../../dashboard/mobile_portion/individual_profile.php">Profile</a>
+                  </li>
+              </ul>
+          </div>
+      </li>
 <!--      <li class="nav-item">-->
 <!--          <a class="nav-link" data-toggle="collapse" href="#auth" aria-expanded="false" aria-controls="auth">-->
 <!--              <i class="menu-icon typcn typcn-document-add"></i>-->

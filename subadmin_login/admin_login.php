@@ -133,7 +133,7 @@ if(isset($_POST['adminlogin'])){
                   <a href="#">Terms</a>
                 </li>
               </ul>
-              <p class="footer-text text-center">copyright © 2019 SEWA Organisation. All rights reserved.</p>
+              <p class="footer-text text-center">copyright © 2019 AarogyaHomeCare Organisation. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -148,7 +148,7 @@ if(isset($_POST['adminlogin'])){
     <!-- endinject -->
     <!-- inject:js -->
     <script src="../dashboard/assets/js/shared/off-canvas.js"></script>
-    <script src="../dashboard/assets/js/shared/misc.js"></script>
+<!--    <script src="../dashboard/assets/js/shared/misc.js"></script>-->
     <!-- endinject -->
   </body>
 </html>

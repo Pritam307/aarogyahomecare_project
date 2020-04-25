@@ -12,7 +12,7 @@ if(!isset($_SESSION)){
 ?>
 
 <?php
-include 'header_dash.php';
+include '../dashboard/header_dash.php';
 ?>
 
-<?php include 'footer_dash.php' ?>
+<?php include '../dashboard/footer_dash.php' ?>

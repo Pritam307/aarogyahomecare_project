@@ -174,7 +174,7 @@ if(isset($_POST['regbtn'])){
 <!-- endinject -->
 <!-- inject:js -->
 <script src="../dashboard/assets/js/shared/off-canvas.js"></script>
-<script src="../dashboard/assets/js/shared/misc.js"></script>
+<!--<script src="../dashboard/assets/js/shared/misc.js"></script>-->
 <script src="../js/custom.js"></script>
 <!-- endinject -->
 </body>

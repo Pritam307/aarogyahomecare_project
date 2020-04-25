@@ -17,25 +17,29 @@ include_once '../dbconnect.php';
 include_once '../send_mail.php';
 $assign_status=null;
 $db_entry=null;
+
 if(isset($_POST['assignBtn'])){
     $nurse_reg=mysqli_real_escape_string($db,$_POST['nurses']);
+    $assigned_duty_shift=mysqli_real_escape_string($db,$_POST['dutyshift']);
     $p_id=mysqli_real_escape_string($db,$_POST['p_id']);
 
     $nurse_info=mysqli_query($db,"SELECT * FROM nurses WHERE regId='$nurse_reg'");
     $res_nurse=mysqli_fetch_assoc($nurse_info);
+    $nurse_id=$res_nurse['id'];
 
     $patient_info=mysqli_query($db,"SELECT email,fname,lname,registration_id,district,service,duty_shift FROM patient_book_nurse WHERE id='$p_id'");
     $res_patient=mysqli_fetch_assoc($patient_info);
     $nurse_duty=$res_patient['duty_shift'];
+
     $nd_shift=mysqli_query($db,"SELECT Shift FROM nurse_duty_shift WHERE id='$nurse_duty'");
     $res_duty=mysqli_fetch_assoc($nd_shift);
-//    echo $res_patient['email'];
+
     $p_email= $res_patient['email'];
-//    $query1="INSERT INTO patient_nurse_allocation (patient_id,nurse_id) VALUES ('$p_id',(SELECT id FROM nurses WHERE regId='$nurse_reg'))";
-//    $query2="UPDATE patient_book_nurse SET accepted='1' WHERE id='$p_id'";
-//
-//    if(mysqli_query($db,$query1) && mysqli_query($db,$query2)){
-//        echo "success";
+    $query1="INSERT INTO patient_nurse_allocation (patient_id,nurse_id,allocated_duty_shift) VALUES ('$p_id','$nurse_id','$assigned_duty_shift')";
+    $query2="UPDATE patient_book_nurse SET accepted='1' WHERE id='$p_id'";
+
+    if(mysqli_query($db,$query1) && mysqli_query($db,$query2)){
+        echo "success";
         $db_entry='Nurse Assigned Successfully';
         $mail->addAddress($p_email);
         $mail->Subject = 'AarogyaHomeCare | Nurse Assign Status';
@@ -56,9 +60,9 @@ if(isset($_POST['assignBtn'])){
         }else{
             $assign_status='Failed to send email';
         }
-//    }else{
-//        $db_entry='Nurse Assignation failed!';
-//    }
+    }else{
+        $db_entry='Nurse Assignation failed!';
+    }
 }
 
 ?>
@@ -106,18 +110,17 @@ if(isset($_POST['assignBtn'])){
     <table class="table table-bordered table-striped">
         <thead>
             <tr align="center">
-                <tH>Name</tH>
-                <tH>Reg. Id</tH>
-                <tH>Gender</tH>
-                <tH>Age</tH>
-                <tH>District</tH>
-                <tH>Phone</tH>
-                <tH>Family Members</tH>
-                <tH>Relation</tH>
-                <tH>Guardian</tH>
-                <tH>Duty Shift</tH>
-                <tH>Service</tH>
-                <tH>Status</tH>
+                <th>Name</th>
+                <th>Reg. Id</th>
+                <th>Gender</th>
+                <th>Age</th>
+                <th>District</th>
+                <th>Phone</th>
+                <th>Relation</th>
+                <th>Guardian</th>
+                <th>Duty Shift</th>
+                <th>Service</th>
+                <th>Status</th>
             </tr>
         </thead>
         <tbody>
@@ -133,7 +136,6 @@ if(isset($_POST['assignBtn'])){
                     <td><?php  echo $row['age'];?></td>
                     <td><?php  echo $row['district'];?></td>
                     <td><?php  echo $row['phone'];?></td>
-                    <td><?php  echo $row['family_members'];?></td>
                     <td><?php  echo $row['relation'];?></td>
                     <td><?php  echo $row['gname'];?></td>
                     <?php
@@ -153,17 +155,26 @@ if(isset($_POST['assignBtn'])){
                         <?php
                             if($row['accepted']==1) {
                                 $id = $row['id'];
-                                $q1 = "SELECT nurse_id FROM patient_nurse_allocation WHERE patient_id='$id'";
+                                $q1 = "SELECT nurse_id,allocated_duty_shift FROM patient_nurse_allocation WHERE patient_id='$id'";
                                 $r1 = mysqli_query($db, $q1);
-                                $nurse_id = mysqli_fetch_assoc($r1)['nurse_id'];
+                                $nres= mysqli_fetch_assoc($r1);
+                                $nurseId = $nres['nurse_id'];
+                                $allocated_shift= $nres['allocated_duty_shift'];
 
-                                $q2 = "SELECT regId,fname,lname FROM nurses WHERE id='$nurse_id'";
+                                $q2 = "SELECT regId,fname,lname FROM nurses WHERE id='$nurseId'";
                                 $r2 = mysqli_query($db, $q2);
                                 $n_reg = mysqli_fetch_assoc($r2);
+
+                                $dquery = "SELECT Shift FROM patient_nurse_allocation,nurse_duty_shift WHERE patient_nurse_allocation.allocated_duty_shift = nurse_duty_shift.id AND nurse_id='$nurseId'";
+                                $dres=mysqli_query($db,$dquery);
+                                $duty_name=mysqli_fetch_assoc($dres)['Shift'];
+
                                 ?>
                                 Assigned Nurse:
                                 <br>
                                 <h6><strong><?php echo $n_reg['regId']; ?></strong></h6>
+                                Duty Shift:
+                                <h6><strong><?php echo $duty_name; ?></strong></h6>
                                 <?php
                             }else if(is_null($row['accepted'])){
                                 ?>
@@ -215,8 +226,8 @@ if(isset($_POST['assignBtn'])){
                 <div class="modal-body px-3">
                     <form action="" method="post" enctype="multipart/form-data">
                         <div class="form-group">
-                            <label for="nurses">Available Nurses</label>
-                            <select class="form-control " name="nurses" id="nurses"  >
+                            <label for="nurses">Assign Nurse</label>
+                            <select class="form-control" name="nurses" >
                                 <?php
                                     $num_query="SELECT id,fname,lname,regId FROM nurses";
                                     $res=mysqli_query($db,$num_query);
@@ -225,6 +236,20 @@ if(isset($_POST['assignBtn'])){
                                     <option><?php echo $row['regId']; ?></option>
                                 <?php
                                     }
+                                ?>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="nurses">Assign Duty Shift</label>
+                            <select class="form-control" name="dutyshift" >
+                                <?php
+                                $num_duty="SELECT * FROM nurse_duty_shift";
+                                $res=mysqli_query($db,$num_duty);
+                                while($row=mysqli_fetch_array($res)){
+                                    ?>
+                                    <option value="<?php echo $row['id']; ?>"><?php echo $row['Shift']; ?></option>
+                                    <?php
+                                }
                                 ?>
                             </select>
                         </div>
